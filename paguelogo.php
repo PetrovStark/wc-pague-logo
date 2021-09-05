@@ -2,7 +2,7 @@
 
 /**
  * Plugin Name: Pague Logo
- * Description: Integração para WooCommerce do gateway Pague Logo.
+ * Description: Plugin de integração com gateway de pagamento "Pague Logo" para a plataforma WooCommerce.
  * Author: SamuraiPetrus
  * Author URI: https://github.com/SamuraiPetrus
  */
