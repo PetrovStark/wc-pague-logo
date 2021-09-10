@@ -9,6 +9,9 @@
 
 #pague-logo-screen #payment-fields{
     padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 
 #pague-logo-screen #payment-fields input{
@@ -16,32 +19,32 @@
     border-radius: 8px;
     background: #fff;
     border: 1px solid #999;
+    width: 100%;
 }
 
-@media screen and (min-width: 280px) {
+@media screen and (min-width: 301px) {
     #pague-logo-screen .card-wrapper {
         display: block;
         position: relative;
-        height: 
-    }
-
-    #pague-logo-screen .card-wrapper .js-card-container {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+        margin-bottom: 22px;
     }
 }
 
-@media screen and (max-width: 280px) {
-    .card-wrapper {
-      max-width: 80vw;
-      width: 100%;
-      margin: 20px auto;
-      overflow-x: hidden;
+@media screen and (min-width: 370px) {
+    #pague-logo-screen .card-wrapper>.jp-card-container {
+        transform-origin: center;
     }
-  
-    .card-wrapper > .jp-card-container {
-      transform: scale(0.625);
-      transform-origin: left center;
+}
+
+@media screen and (min-width: 570px) {
+    #pague-logo-screen #payment-fields input{
+        width: 48%;
+    }    
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+    #pague-logo-screen .card-wrapper>.jp-card-container {
+        transform: scale(0.75);
+        transform-origin: left center;
     }
-  }
+}
