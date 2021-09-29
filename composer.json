@@ -1,0 +1,8 @@
+{
+    "autoload": {
+        "psr-4": {
+            "PagueLogo\\Controllers\\": "controllers/",
+            "PagueLogo\\Models\\": "models/"
+        }
+    }
+}

@@ -7,19 +7,17 @@
  * Author URI: https://github.com/SamuraiPetrus
  */
 
+require 'vendor/autoload.php';
+
+use PagueLogo\Controllers\CardController;
+use PagueLogo\Exceptions\CardException;
+
 add_filter('woocommerce_payment_gateways', 'add_pague_logo_gateway_class');
 function add_pague_logo_gateway_class($methods) 
 {
     $methods[] = 'WC_Pague_Logo_Gateway';
 
     return $methods;
-}
-
-add_action('wp_enqueue_scripts', 'enqueue_michelangelo_scripts');
-function enqueue_michelangelo_scripts()
-{
-    wp_enqueue_style( 'pague-logo-style', plugin_dir_url(__FILE__) . '/assets/css/index.css', array() );
-    wp_enqueue_script( 'pague-logo-card-js-script', plugin_dir_url(__FILE__) . '/assets/js/card.js', array( 'jquery' ) );
 }
 
 
@@ -30,6 +28,8 @@ function pague_logo_gateway_init()
     
     /**
      * Classe referente a integração WooCommerce do Gateway Pague Logo.
+     * 
+     * @see https://rudrastyh.com/woocommerce/payment-gateway-plugin.html Artigo que ensina a criar gateways de pagamento.
      */
     class WC_Pague_Logo_Gateway extends WC_Payment_Gateway
     {
@@ -38,7 +38,7 @@ function pague_logo_gateway_init()
          */
         public function __construct()
         {
-            $this->id = 'paguelogo';
+            $this->id = 'pague-logo';
             $this->icon = '';
             $this->has_fields = true;
             $this->method_title = 'Pague Logo';
@@ -54,19 +54,20 @@ function pague_logo_gateway_init()
             $this->title = $this->get_option('title');
             $this->desctiption = $this->get_option('description');
             $this->enabled = $this->get_option('enabled');
-            $this->testmode = 'yes' === $this->get_option('testmode');
-            $this->private_key = $this->testmode ? $this->get_option('test_private_key') : $this->get_option('private_key');
-            $this->publishable_key = $this->testmode ? $this->get_option('test_publishable_key') : $this->get_option('publishable_key');
 
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
+            add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
         }
 
+        /**
+         * Define as opções do painel de configuração do gateway.
+         */
         public function init_form_fields()
         {
             $this->form_fields = array(
                 'enabled' => array(
-                    'title'       => 'Enable/Disable',
-                    'label'       => 'Enable Michelangelo Gateway',
+                    'title'       => 'Habilitar Pague Logo',
+                    'label'       => 'Ativar o gateway de pagamento',
                     'type'        => 'checkbox',
                     'description' => '',
                     'default'     => 'no'
@@ -75,68 +76,79 @@ function pague_logo_gateway_init()
                     'title'       => 'Título',
                     'type'        => 'text',
                     'description' => 'Essa opção gerencia o texto que aparece no título do gateway no momento do checkout.',
-                    'default'     => 'Cartão de crédito',
+                    'default'     => 'Pague Logo',
                     'desc_tip'    => true,
                 ),
                 'description' => array(
                     'title'       => 'Descrição',
                     'type'        => 'textarea',
                     'description' => 'Essa opção gerencia a descrição do gateway no momento do checkout.',
-                    'default'     => 'Pague com cartão de crédito através da Pague Logo.',
-                ),
-                'testmode' => array(
-                    'title'       => 'Ambiente de testes',
-                    'label'       => 'Habilitar ambiente de testes',
-                    'type'        => 'checkbox',
-                    'description' => 'Habilita o ambiente de testes da Pague Logo',
-                    'default'     => 'yes',
-                    'desc_tip'    => true,
-                ),
-                'test_publishable_key' => array(
-                    'title'       => 'Chave pública (Sandbox)',
-                    'type'        => 'text'
-                ),
-                'test_private_key' => array(
-                    'title'       => 'Chave secreta (Sandbox)',
-                    'type'        => 'password',
-                ),
-                'publishable_key' => array(
-                    'title'       => 'Chave pública',
-                    'type'        => 'text'
-                ),
-                'private_key' => array(
-                    'title'       => 'Chave secreta',
-                    'type'        => 'password'
+                    'default'     => 'Disponibilize pagamentos com cartão de crédito para os clientes do seu e-commerce com o gateway da Pague Logo.',
                 )
             );
         }
         
         /**
-         * Gera a interface do gateway.
+         * Gera a interface front-end do gateway.
          */
         public function payment_fields()
         {
-            include 'src/payment-fields.php';
+            include 'views/payment-fields.php';
         }
 
-        public function validate_scripts()
+        /**
+         * Carrega os scripts e as folhas de estilo do gateway.
+         * 
+         * @see https://github.com/jessepollak/card Biblioteca Javascript que gera o cartão interativo.
+         */
+        public function payment_scripts()
         {
+            if (!is_cart() && !is_checkout() && !isset($_GET['pay_for_order'])) {
+                return;
+            }
 
+            if ('no' === $this->enabled) {
+                return;
+            }
+            
+            wp_enqueue_style('pague-logo-index-css', plugin_dir_url(__FILE__) . '/assets/css/index.css');
+
+            wp_enqueue_script('pague-logo-card-js', plugin_dir_url(__FILE__) . '/assets/js/card.js', array('jquery'));
+            wp_enqueue_script('pague-logo-validate-fields-js', plugin_dir_url(__FILE__) . '/assets/js/payment-fields.js', array(), false, true);
         }
 
+        /**
+         * Valida as regras de negócio do cartão.
+         */
         public function validate_fields()
         {
-            
-        }
+            $errors = 0;
+            $Card = new CardController();
+            $excecoes = $Card->getExcecoesDoCartao();
 
-        public function process_payment($order_id)
-        {
+            foreach ($Card->getCamposDoCartao() as $key) {
+                $value = $_POST[$key];
 
-        }
+                if (empty($value)) {
+                    wc_add_notice($excecoes['required_'.$key], 'error');
+                    $errors++;
 
-        public function webhook()
-        {
+                    continue;
+                }
 
+                if ('billing_card_expiry' === $key) {
+                    if ($Card->verificaDataExpiracao($value)) {
+                        wc_add_notice($excecoes['expired_billing_card_expiry'], 'error');
+                        $errors++;
+                    }
+                }
+            }
+
+            if ($errors > 0) {
+                return false;
+            }
+
+            return true;
         }
     }
 }

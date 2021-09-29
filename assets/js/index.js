@@ -6,6 +6,13 @@ var card = new Card({
     // where you want the card to appear
     container: '.card-wrapper', // *required*
 
+    formSelectors: {
+        numberInput: 'input[name="billing_card_number"]', // optional — default input[name="number"]
+        expiryInput: 'input[name="billing_card_expiry"]', // optional — default input[name="expiry"]
+        cvcInput: 'input[name="billing_card_cvc"]', // optional — default input[name="cvc"]
+        nameInput: 'input[name="billing_card_name"]' // optional - defaults input[name="name"]
+    },
+
     // Strings for translation - optional
     messages: {
         validDate: 'valid\ndate', // optional - default 'valid\nthru'
