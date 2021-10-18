@@ -9,8 +9,8 @@
 
 require 'vendor/autoload.php';
 
-use PagueLogo\Controllers\CardController;
-use PagueLogo\Exceptions\CardException;
+use PagueLogo\Source\Card;
+use PagueLogo\Source\Gateway as PagueLogo;
 
 add_filter('woocommerce_payment_gateways', 'add_pague_logo_gateway_class');
 function add_pague_logo_gateway_class($methods) 
@@ -54,6 +54,8 @@ function pague_logo_gateway_init()
             $this->title = $this->get_option('title');
             $this->desctiption = $this->get_option('description');
             $this->enabled = $this->get_option('enabled');
+            $this->usuario = $this->get_option('usuario');
+            $this->senha = $this->get_option('senha');
 
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
             add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
@@ -84,7 +86,21 @@ function pague_logo_gateway_init()
                     'type'        => 'textarea',
                     'description' => 'Essa opção gerencia a descrição do gateway no momento do checkout.',
                     'default'     => 'Disponibilize pagamentos com cartão de crédito para os clientes do seu e-commerce com o gateway da Pague Logo.',
-                )
+                ),
+                'usuario' => array(
+                    'title'       => 'Usuário',
+                    'type'        => 'text',
+                    'description' => 'Usuário a ser utilizado no processo de autenticação do gateway da Pague Logo.',
+                    'default'     => '',
+                    'desc_tip'    => true,
+                ),
+                'senha' => array(
+                    'title'       => 'Senha',
+                    'type'        => 'password',
+                    'description' => 'Senha a ser utilizada no processo de autenticação do gateway da Pague Logo.',
+                    'default'     => '',
+                    'desc_tip'    => true,
+                ),
             );
         }
         
@@ -123,20 +139,23 @@ function pague_logo_gateway_init()
         public function validate_fields()
         {
             $errors = 0;
-            $Card = new CardController();
+            $Card = new Card();
             $excecoes = $Card->getExcecoesDoCartao();
 
             foreach ($Card->getCamposDoCartao() as $key) {
-                $value = $_POST[$key];
+
+                $field_name = 'billing_'.$key['slug'];
+
+                $value = $_POST[$field_name];
 
                 if (empty($value)) {
-                    wc_add_notice($excecoes['required_'.$key], 'error');
+                    wc_add_notice($excecoes['required_'.$field_name], 'error');
                     $errors++;
 
                     continue;
                 }
 
-                if ('billing_card_expiry' === $key) {
+                if ('billing_card_expiry' === $field_name) {
                     if ($Card->verificaDataExpiracao($value)) {
                         wc_add_notice($excecoes['expired_billing_card_expiry'], 'error');
                         $errors++;
@@ -149,6 +168,35 @@ function pague_logo_gateway_init()
             }
 
             return true;
+        }
+
+        /**
+         * Processa o pagamento.
+         */
+        public function process_payment($order_id)
+        {
+            global $woocommerce;
+
+            $order = wc_get_order($order_id);
+
+            try {
+                $PagueLogo = new PagueLogo($this->usuario, $this->senha);
+                $PagueLogo->processaAuth();
+            } catch (Exception $e) {
+                wc_add_notice($e->getMessage(), 'error');
+                return;
+            }
+
+            // we received the payment
+			$order->payment_complete();
+
+            $order->add_order_note( 'Hey, your order is paid! Thank you!', true );
+
+            return array(
+				'result' => 'success',
+				'redirect' => $this->get_return_url( $order )
+			);
+
         }
     }
 }
