@@ -9,8 +9,19 @@
 
 require 'vendor/autoload.php';
 
-use PagueLogo\Source\Card;
-use PagueLogo\Source\Gateway as PagueLogo;
+use PagueLogo\Source\CardFieldsInfo;
+use PagueLogo\Source\CardValidator;
+use PagueLogo\Source\PagueLogoAuthentication;
+
+register_activation_hook( __FILE__, 'activation_hook' );
+function activation_hook()
+{
+    if ( ! class_exists( 'WooCommerce' ) ) {
+        deactivate_plugins( plugin_basename( __FILE__ ) );
+        wp_die( 'Este plugin requer a instalação do WooCommerce.' );
+    }
+}
+
 
 add_filter('woocommerce_payment_gateways', 'add_pague_logo_gateway_class');
 function add_pague_logo_gateway_class($methods) 
@@ -24,8 +35,6 @@ function add_pague_logo_gateway_class($methods)
 add_action('plugins_loaded', 'pague_logo_gateway_init');
 function pague_logo_gateway_init()
 {
-    if (!class_exists('WC_Payment_Gateway')) die;
-    
     /**
      * Classe referente a integração WooCommerce do Gateway Pague Logo.
      * 
@@ -103,14 +112,6 @@ function pague_logo_gateway_init()
                 ),
             );
         }
-        
-        /**
-         * Gera a interface front-end do gateway.
-         */
-        public function payment_fields()
-        {
-            include 'views/payment-fields.php';
-        }
 
         /**
          * Carrega os scripts e as folhas de estilo do gateway.
@@ -134,15 +135,25 @@ function pague_logo_gateway_init()
         }
 
         /**
+         * Gera a interface front-end do gateway.
+         */
+        public function payment_fields()
+        {
+            include 'views/payment-fields.php';
+        }
+
+        /**
          * Valida as regras de negócio do cartão.
          */
         public function validate_fields()
         {
-            $errors = 0;
-            $Card = new Card();
-            $excecoes = $Card->getExcecoesDoCartao();
+            $CardFieldsInfo = new CardFieldsInfo();
+            $CardValidator = new CardValidator();
 
-            foreach ($Card->getCamposDoCartao() as $key) {
+            $excecoes = $CardFieldsInfo->getExcecoesDoCartao();
+
+            $errors = 0;
+            foreach ($CardFieldsInfo->getCamposDoCartao() as $key) {
 
                 $field_name = 'billing_'.$key['slug'];
 
@@ -156,9 +167,11 @@ function pague_logo_gateway_init()
                 }
 
                 if ('billing_card_expiry' === $field_name) {
-                    if ($Card->verificaDataExpiracao($value)) {
+                    if ($CardValidator->verificaDataExpiracao($value)) {
                         wc_add_notice($excecoes['expired_billing_card_expiry'], 'error');
                         $errors++;
+
+                        continue;
                     }
                 }
             }
@@ -180,8 +193,12 @@ function pague_logo_gateway_init()
             $order = wc_get_order($order_id);
 
             try {
-                $PagueLogo = new PagueLogo($this->usuario, $this->senha);
-                $PagueLogo->processaAuth();
+                $PagueLogoAuth = new PagueLogoAuthentication($this->usuario, $this->senha);
+                $token = $PagueLogoAuth->getToken();
+                $whois = $PagueLogoAuth->getWhois();
+
+                throw new Exception($token);
+
             } catch (Exception $e) {
                 wc_add_notice($e->getMessage(), 'error');
                 return;

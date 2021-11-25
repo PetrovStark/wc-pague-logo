@@ -3,9 +3,9 @@
 namespace PagueLogo\Source;
 
 /**
- * Representa um cartão de crédito no fluxo de checkout da Pague Logo.
+ * Responsável por fornecer as informações dos campos de cartão de crédito.
  */
-class Card
+class CardFieldsInfo
 {
     private $campos = [
         [
@@ -45,26 +45,5 @@ class Card
     public function getExcecoesDoCartao()
     {
         return $this->campos_excecoes;
-    }
-    
-    /**
-     * Verifica se o cartão está expirado.
-     * 
-     * @param $date
-     * 
-     * @return bool true se estiver expirado
-     */
-    public function verificaDataExpiracao($date)
-    {
-        date_default_timezone_set('America/Sao_Paulo');
-
-        $date = str_replace(' ', '', $date);
-        $date = explode('/', $date);
-        $date = $date[1].'-'.$date[0].'-01';
-
-        $expiry_date = new \DateTime($date);
-        $now = new \DateTime(date('Y-m'));
-
-        return $expiry_date < $now;
     }
 }

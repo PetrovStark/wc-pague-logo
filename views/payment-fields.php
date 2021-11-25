@@ -1,9 +1,8 @@
 <?php
-    use PagueLogo\Source\Card;
+    use PagueLogo\Source\CardFieldsInfo;
 
-    $Card = new Card();
-
-    $fields = $Card->getCamposDoCartao();
+    $CardFieldsInfo = new CardFieldsInfo();
+    $fields = $CardFieldsInfo->getCamposDoCartao();
 ?>
 
 <div id="pague-logo-screen">
