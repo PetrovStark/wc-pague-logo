@@ -9,7 +9,7 @@ var card = new Card({
     formSelectors: {
         numberInput: 'input[name="billing_card_number"]', // optional — default input[name="number"]
         expiryInput: 'input[name="billing_card_expiry"]', // optional — default input[name="expiry"]
-        cvcInput: 'input[name="billing_card_cvc"]', // optional — default input[name="cvc"]
+        cvcInput: 'input[name="billing_card_cvv"]', // optional — default input[name="cvc"]
         nameInput: 'input[name="billing_card_name"]' // optional - defaults input[name="name"]
     },
 

@@ -193,11 +193,16 @@ function pague_logo_gateway_init()
             $order = wc_get_order($order_id);
 
             try {
+                // throw new Exception(json_encode($_POST));
                 $PagueLogoAuth = new PagueLogoAuthentication($this->usuario, $this->senha);
-                $token = $PagueLogoAuth->getToken();
-                $whois = $PagueLogoAuth->getWhois();
+                $authorization = [
+                    'token' => $PagueLogoAuth->getToken(),
+                    'whois' => $PagueLogoAuth->getWhois()
+                ];
 
-                throw new Exception($token);
+                $CreditCard = new PagueLogoCreditCard($_POST);
+
+                PagueLogoPaymentProcessor::processPayment($order, $CreditCard, $authorization);
 
             } catch (Exception $e) {
                 wc_add_notice($e->getMessage(), 'error');

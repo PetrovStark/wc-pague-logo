@@ -21,7 +21,7 @@ class CardFieldsInfo
             'name' => '••/••'
         ],
         [
-            'slug' => 'card_cvc',
+            'slug' => 'card_cvv',
             'name' => 'CVV'
         ]
     ];
@@ -30,7 +30,7 @@ class CardFieldsInfo
         'required_billing_card_name' => '<strong>Nome do proprietário</strong> do cartão é obrigatório.',
         'required_billing_card_number' => '<strong>Número do cartão</strong> é obrigatório.',
         'required_billing_card_expiry' => '<strong>Data de expiração</strong> do cartão é obrigatória.',
-        'required_billing_card_cvc' => '<strong>CVV</strong> do cartão é obrigatório.',
+        'required_billing_card_cvv' => '<strong>CVV</strong> do cartão é obrigatório.',
         'expired_billing_card_expiry' => 'O cartão inserido está expirado, modifique a data de expiração ou insira um novo cartão.'
     ];
 

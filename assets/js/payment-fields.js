@@ -7,7 +7,7 @@ function validate_payment_fields() {
         'pague_logo_card_name',
         'pague_logo_card_number',
         'pague_logo_card_expiry',
-        'pague_logo_card_cvc'
+        'pague_logo_card_cvv'
     ];
 
     payment_fields.forEach(function(field_id){

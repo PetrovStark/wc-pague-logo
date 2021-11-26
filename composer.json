@@ -1,7 +1,8 @@
 {
     "autoload": {
         "psr-4": {
-            "PagueLogo\\Source\\": "src/"
+            "PagueLogo\\Source\\": "src/",
+            "PagueLogo\\Interfaces\\": "interfaces/"
         }
     }
 }
