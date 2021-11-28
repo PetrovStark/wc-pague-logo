@@ -10,9 +10,10 @@ class PagueLogoRequestValidator
     public static function validate($response)
     {
         $status = $response->responseStatus[0]->status;
+        $mensagem = $response->responseStatus[0]->mensagem;
         
         if (empty($response->data) || $status !== 'ok') {
-            throw new \Exception($response->mensagem);
+            throw new \Exception($mensagem);
         }
     }
 }

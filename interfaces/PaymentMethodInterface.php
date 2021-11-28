@@ -9,9 +9,6 @@ interface PaymentMethodInterface
 {
     /**
      * Processa o pagamento.
-     * 
-     * @param \WC_Order $order
-     * @param array $authorization
      */
-    public function processPayment($order, $authorization);
+    public function processPayment();
 }

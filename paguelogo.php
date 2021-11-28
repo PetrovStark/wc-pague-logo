@@ -12,13 +12,22 @@ require 'vendor/autoload.php';
 use PagueLogo\Source\CardFieldsInfo;
 use PagueLogo\Source\CardValidator;
 use PagueLogo\Source\PagueLogoAuthentication;
+use PagueLogo\Source\PagueLogoPaymentGateway;
+use PagueLogo\Source\PagueLogoCreditCard;
 
-register_activation_hook( __FILE__, 'activation_hook' );
-function activation_hook()
+register_activation_hook( __FILE__, 'check_plugin_depedencies' );
+function check_plugin_depedencies()
 {
-    if ( ! class_exists( 'WooCommerce' ) ) {
-        deactivate_plugins( plugin_basename( __FILE__ ) );
-        wp_die( 'Este plugin requer a instalação do WooCommerce.' );
+    $plugin_depedencies = [
+        'WooCommerce' => 'WooCommerce',
+        'Extra_Checkout_Fields_For_Brazil' => 'Brazilian Market on WooCommerce',
+    ];
+
+    foreach ($plugin_depedencies as $classname => $plugin_name) {
+        if ( ! class_exists( $classname ) ) {
+            deactivate_plugins( plugin_basename( __FILE__ ) );
+            wp_die( 'Este plugin requer a ativação do seguinte plugin: '.$plugin_name.'<br><br><a href="#" onclick="history.back()"><-Voltar para plugins</a>' );
+        }
     }
 }
 
@@ -65,6 +74,7 @@ function pague_logo_gateway_init()
             $this->enabled = $this->get_option('enabled');
             $this->usuario = $this->get_option('usuario');
             $this->senha = $this->get_option('senha');
+            $this->parcelas = $this->get_option('parcelas');
 
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
             add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
@@ -110,6 +120,13 @@ function pague_logo_gateway_init()
                     'default'     => '',
                     'desc_tip'    => true,
                 ),
+                'parcelas' => array(
+                    'title' => 'Nº de Parcelas',
+                    'type' => 'number',
+                    'description' => 'Número de parcelas a serem exibidas no checkout.',
+                    'default' => '1',
+                    'desc_tip' => true
+                )
             );
         }
 
@@ -131,7 +148,8 @@ function pague_logo_gateway_init()
             wp_enqueue_style('pague-logo-index-css', plugin_dir_url(__FILE__) . '/assets/css/index.css');
 
             wp_enqueue_script('pague-logo-card-js', plugin_dir_url(__FILE__) . '/assets/js/card.js', array('jquery'));
-            wp_enqueue_script('pague-logo-validate-fields-js', plugin_dir_url(__FILE__) . '/assets/js/payment-fields.js', array(), false, true);
+            // wp_enqueue_script('pague-logo-validate-fields-js', plugin_dir_url(__FILE__) . '/assets/js/payment-fields.js', array(), false, true);
+            wp_enqueue_script('pague-logo-insert-card-flag-js', plugin_dir_url(__FILE__) . '/assets/js/insert-card-flag.js', array(), false, true);
         }
 
         /**
@@ -139,6 +157,14 @@ function pague_logo_gateway_init()
          */
         public function payment_fields()
         {
+            $admin_options = [
+                'parcelas'
+            ];
+
+            foreach ($admin_options as $option) {
+                $$option = $this->$option;
+            }
+
             include 'views/payment-fields.php';
         }
 
@@ -147,40 +173,17 @@ function pague_logo_gateway_init()
          */
         public function validate_fields()
         {
-            $CardFieldsInfo = new CardFieldsInfo();
-            $CardValidator = new CardValidator();
+            $CardValidator = new CardValidator($_POST);
 
-            $excecoes = $CardFieldsInfo->getExcecoesDoCartao();
+            try {
+                $CardValidator->validaCamposDoCartao();
+                $CardValidator->validaParcelas();
 
-            $errors = 0;
-            foreach ($CardFieldsInfo->getCamposDoCartao() as $key) {
+                return true;
 
-                $field_name = 'billing_'.$key['slug'];
-
-                $value = $_POST[$field_name];
-
-                if (empty($value)) {
-                    wc_add_notice($excecoes['required_'.$field_name], 'error');
-                    $errors++;
-
-                    continue;
-                }
-
-                if ('billing_card_expiry' === $field_name) {
-                    if ($CardValidator->verificaDataExpiracao($value)) {
-                        wc_add_notice($excecoes['expired_billing_card_expiry'], 'error');
-                        $errors++;
-
-                        continue;
-                    }
-                }
-            }
-
-            if ($errors > 0) {
+            } catch (Exception $e) {
                 return false;
             }
-
-            return true;
         }
 
         /**
@@ -188,21 +191,18 @@ function pague_logo_gateway_init()
          */
         public function process_payment($order_id)
         {
-            global $woocommerce;
-
             $order = wc_get_order($order_id);
 
             try {
-                // throw new Exception(json_encode($_POST));
                 $PagueLogoAuth = new PagueLogoAuthentication($this->usuario, $this->senha);
                 $authorization = [
                     'token' => $PagueLogoAuth->getToken(),
                     'whois' => $PagueLogoAuth->getWhois()
                 ];
 
-                $CreditCard = new PagueLogoCreditCard($_POST);
+                $CreditCard = new PagueLogoCreditCard($_POST, $order, $authorization);
 
-                PagueLogoPaymentProcessor::processPayment($order, $CreditCard, $authorization);
+                PagueLogoPaymentGateway::processPayment($order, $CreditCard, $authorization);
 
             } catch (Exception $e) {
                 wc_add_notice($e->getMessage(), 'error');

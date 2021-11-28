@@ -2,16 +2,19 @@
     width: 100%;
 }
 
-#pague-logo-screen input {
+#pague-logo-screen input,
+#pague-logo-screen select{
     padding: 0;
     margin: 0;
     background: transparent;
     width: 100%;
     height: 100%;
     padding: 0px 10px;
+    border: none;
 }
 
-#pague-logo-screen input:focus {
+#pague-logo-screen input:focus,
+#pague-logo-screen select:focus {
     outline: none;
 }
 
@@ -70,7 +73,7 @@
 }
 
 @media screen and (min-width: 570px) {
-    #pague-logo-screen #payment-fields .field{
+    #pague-logo-screen #payment-fields .field.half{
         width: 48%;
     }    
 }
