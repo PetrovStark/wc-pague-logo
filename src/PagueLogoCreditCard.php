@@ -38,7 +38,7 @@ class PagueLogoCreditCard implements PaymentMethodInterface
         $this->card_flag = $request['billing_card_flag'];
         $this->number = $request['billing_card_number'];
         $this->holder_name = $request['billing_card_name'];
-        $this->expiration_date = $request['billing_card_expiry'];
+        $this->expiration_date = str_replace(' ', '', $request['billing_card_expiry']);
         $this->cvv = $request['billing_card_cvv'];
         $this->installments = $request['billing_installments'];
     }
@@ -50,7 +50,7 @@ class PagueLogoCreditCard implements PaymentMethodInterface
         $body = json_encode([
             'tipo' => 'credito',
             'valor' => number_format($this->price, 2, ',', '.'),
-            'dataPagamento' => date('Y-m-d'),
+            'dataPagamento' => date('d/m/Y'),
             'quantidadeParcelas' => $this->installments,
             'descricaoPagamento' => $this->order->get_customer_note(),
             'cancelarAntesDeEfetivar' => 'false',
