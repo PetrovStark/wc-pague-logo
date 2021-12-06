@@ -23,12 +23,14 @@ class PagueLogoCreditCard implements PaymentMethodInterface
         # Informações do pagador.
         $this->full_name = $request['billing_first_name'] . ' ' . $request['billing_last_name'];
         $this->email = $request['billing_email'];
-        $this->cpf = $request['billing_cpf'];
-        $this->cnpj = $request['billing_cnpj'];
+        $this->cpf = $this->filterNumbers($request['billing_cpf']);
+        $this->cnpj = $this->filterNumbers($request['billing_cnpj']);
+        $this->phone = $this->filterNumbers($request['billing_phone']);
         $this->company = $request['billing_company'];
         $this->person_type = $this->getPersonType($request['billing_persontype']);
         $this->address_1 = $request['billing_address_1'];
         $this->address_2 = $request['billing_address_2'];
+        $this->address_number = $request['billing_number'];
         $this->postcode = $request['billing_postcode'];
         $this->neighborhood = $request['billing_neighborhood'];
         $this->city = $request['billing_city'];
@@ -49,7 +51,7 @@ class PagueLogoCreditCard implements PaymentMethodInterface
 
         $body = json_encode([
             'tipo' => 'credito',
-            'valor' => number_format($this->price, 2, ',', '.'),
+            'valor' => $this->formatPrice($this->price),
             'dataPagamento' => date('d/m/Y'),
             'quantidadeParcelas' => $this->installments,
             'descricaoPagamento' => $this->order->get_customer_note(),
@@ -69,6 +71,7 @@ class PagueLogoCreditCard implements PaymentMethodInterface
         PagueLogoRequestValidator::validate($response);
 
         throw new \Exception('PagueLogo: ' . json_encode($response->data));
+        
         return $response->data;
     }
 
@@ -124,7 +127,7 @@ class PagueLogoCreditCard implements PaymentMethodInterface
         return [
             'id' => '',
             'logradouro' => $this->address_1,
-            'numero' => $this->number,
+            'numero' => $this->address_number,
             'bairro' => $this->neighborhood,
             'cep' => $this->postcode,
             'cidade' => $this->city,
@@ -147,5 +150,21 @@ class PagueLogoCreditCard implements PaymentMethodInterface
             'salvarCartao' => '',
             'tokenApi' => ''
         ];
+    }
+
+    /**
+     * Filtra apenas os números de uma string
+     */
+    private function filterNumbers(string $string)
+    {
+        return preg_replace('/[^0-9]/', '', $string);
+    }
+
+    /**
+     * Formata o valor para o formato do PagueLogo.
+     */
+    private function formatPrice(int $price)
+    {
+        return number_format($price, 2, ',', '.');
     }
 }

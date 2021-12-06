@@ -19,12 +19,12 @@ class PagueLogoRequestMaker
      * 
      * @throws Exception Caso ocorra algum erro na requisição
      */
-    public static function endpoint($endpoint, $method, $body = [], $headers = [])
+    public static function endpoint($resource, $method, $body = [], $headers = [])
     {
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => "https://paguelogo.com.br/api/" . $endpoint,
+            CURLOPT_URL => $GLOBALS['PAGUE_LOGO_ENDPOINT'] . $resource,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,

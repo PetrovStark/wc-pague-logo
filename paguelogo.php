@@ -72,9 +72,12 @@ function pague_logo_gateway_init()
             $this->title = $this->get_option('title');
             $this->desctiption = $this->get_option('description');
             $this->enabled = $this->get_option('enabled');
+            $this->sandbox = $this->get_option('sandbox');
             $this->usuario = $this->get_option('usuario');
             $this->senha = $this->get_option('senha');
             $this->parcelas = $this->get_option('parcelas');
+
+            $this->set_environment();
 
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
             add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
@@ -89,6 +92,13 @@ function pague_logo_gateway_init()
                 'enabled' => array(
                     'title'       => 'Habilitar Pague Logo',
                     'label'       => 'Ativar o gateway de pagamento',
+                    'type'        => 'checkbox',
+                    'description' => '',
+                    'default'     => 'no'
+                ),
+                'sandbox' => array(
+                    'title'       => 'Habilitar Sandbox',
+                    'label'       => 'Ativar o ambiente de testes da API da Pague Logo',
                     'type'        => 'checkbox',
                     'description' => '',
                     'default'     => 'no'
@@ -128,6 +138,19 @@ function pague_logo_gateway_init()
                     'desc_tip' => true
                 )
             );
+        }
+
+        /**
+         * Define o endpoint de consumo da API de acordo com a configuração de sandbox.
+         */
+        public function set_environment()
+        {
+            $endpoint = 'https://paguelogo.com.br/api/';
+            if ($this->sandbox === 'yes') {
+                $endpoint = 'https://sandbox.paguelogo.com.br/api/';
+            }
+
+            $GLOBALS['PAGUE_LOGO_ENDPOINT'] = $endpoint;
         }
 
         /**
