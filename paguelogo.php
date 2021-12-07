@@ -225,10 +225,16 @@ function pague_logo_gateway_init()
 
                 $CreditCard = new PagueLogoCreditCard($_POST, $order, $authorization);
 
-                PagueLogoPaymentGateway::processPayment($order, $CreditCard, $authorization);
+                $response = PagueLogoPaymentGateway::processPayment($order, $CreditCard, $authorization);
+
+                update_post_meta($order->get_id(), 'pague_logo_response_log', json_encode($response));
 
             } catch (Exception $e) {
                 wc_add_notice($e->getMessage(), 'error');
+
+                update_post_meta($order->get_id(), 'pague_logo_error_log', $e->getMessage());
+                $order->update_status('failed', $e->getMessage());
+
                 return;
             }
 
