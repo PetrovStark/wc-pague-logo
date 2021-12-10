@@ -45,7 +45,22 @@ class PagueLogoCreditCard implements PaymentMethodInterface
         $this->installments = $request['billing_installments'];
     }
 
+    /**
+     * Fluxo de pagamento do cartão de crédito.
+     */
     public function processPayment()
+    {
+        $response = $this->paymentRequest();
+
+        $this->insertPaymentMetaData($response);
+        
+        return $response->data;
+    }
+
+    /**
+     * Realiza a requisição de pagamento.
+     */
+    private function paymentRequest()
     {
         date_default_timezone_set('America/Sao_Paulo');
 
@@ -66,13 +81,35 @@ class PagueLogoCreditCard implements PaymentMethodInterface
             'Whois: '.$this->authorization['whois']
         ];
 
-        $response = PagueLogoRequestMaker::endpoint('cartao/pagar', 'POST', $body, $headers);
+        // $response = PagueLogoRequestMaker::endpoint('cartao/pagar', 'POST', $body, $headers);
 
         $response = $this->mockResponse();
 
         PagueLogoRequestValidator::validate($response);
-        
-        return $response->data;
+
+        return $response;
+    }
+
+    /**
+     * Insere os metadados de pagamento do pedido.
+     * 
+     * @return void
+     */
+    private function insertPaymentMetaData($response)
+    {
+        $payment_meta_data = [
+                'pague_logo_created_at' => $response->data->dataPagamento,
+                'pague_logo_payment_total' => $response->data->valor,
+            'pague_logo_transaction_id' => $response->data->codigoTransacaoMaquina,
+            'pague_logo_authentication_number' => $response->data->numeroAutorizacao,
+            'pague_logo_payment_type' => $response->data->tipoPagamento,
+                'pague_logo_card_flag' => $response->data->bandeiraCartaoPagamento,
+                'pague_logo_installments_number' => $response->data->quantidadeParcelas,
+        ];
+
+        foreach ($payment_meta_data as $meta_key => $meta_value) {
+            update_post_meta($this->order_id, $meta_key, $meta_value);
+        } 
     }
 
     /**
@@ -173,6 +210,6 @@ class PagueLogoCreditCard implements PaymentMethodInterface
      */
     private function mockResponse()
     {
-        return json_decode('{"data":[{"id":"1123269","tipo":"debito","valor":"10,00","valorLiquido":"9,95","codigoCielo":null,"quantidadeParcelas":"1","situacao":"efetivado","dataPagamento":"01/03/2021 05:08:38","dataCadastro":null,"codigoTransacaoMaquina":"432164177","codigoAutorizacao":null,"numeroAutorizacao":"502954","bandeiraCartaoPagamento":"elodebito","descricaoPagamento":"Pagamento efetuado por Máquina de Cartão. Máquina => 6M230428","loja":null,"cartao":{"bandeira":null,"titular":null,"tokenApi":null},"beneficiado":{"id":"1490","nome":"CLIENTE 1","nomeSocial":null,"cpfCnpj":"19XXXXXXX0107","tipo":"juridica","dataNascimento":null,"email":"CLIENTE1@gmail.com","endereco":null},"pagador":{"id":null,"nome":null,"nomeSocial":null,"cpfCnpj":null,"tipo":null,"dataNascimento":null,"email":null,"endereco":null},"maquinaPagamento":{"id":"478","codigo":"478","serial":"6M230428","dataCadastro":"15/11/2020","descricao":"MQ02 - CLIENTE 1 - NEW"}},{"id":"1123243","tipo":"credito","valor":"30,00","valorLiquido":"29,66","codigoCielo":null,"quantidadeParcelas":"1","situacao":"efetivado","dataPagamento":"01/03/2021 05:56:53","dataCadastro":null,"codigoTransacaoMaquina":"432165114","codigoAutorizacao":null,"numeroAutorizacao":"574866","bandeiraCartaoPagamento":"master","descricaoPagamento":"Pagamento efetuado por Máquina de Cartão. Máquina => 6M230428","loja":null,"cartao":{"bandeira":null,"titular":null,"tokenApi":null},"beneficiado":{"id":"1490","nome":"CLIENTE 1","nomeSocial":null,"cpfCnpj":"19xxxxxxx000107","tipo":"juridica","dataNascimento":null,"email":"cliente1@gmail.com","endereco":null},"pagador":{"id":null,"nome":null,"nomeSocial":null,"cpfCnpj":null,"tipo":null,"dataNascimento":null,"email":null,"endereco":null},"maquinaPagamento":{"id":"478","codigo":"478","serial":"6M230428","dataCadastro":"15/11/2020","descricao":"MQ02 - CLIENTE 1 - NEW"}}],"responseStatus":[{"status":"ok","codigo":null,"mensagem":"Sucesso!"}]}');
+        return json_decode('{"data":{"id":"1123269","tipo":"debito","valor":"10,00","valorLiquido":"9,95","codigoCielo":null,"quantidadeParcelas":"1","situacao":"efetivado","dataPagamento":"01/03/2021 05:08:38","dataCadastro":null,"codigoTransacaoMaquina":"432164177","codigoAutorizacao":null,"numeroAutorizacao":"502954","bandeiraCartaoPagamento":"elodebito","descricaoPagamento":"Pagamento efetuado por Máquina de Cartão. Máquina => 6M230428","loja":null,"cartao":{"bandeira":null,"titular":null,"tokenApi":null},"beneficiado":{"id":"1490","nome":"CLIENTE 1","nomeSocial":null,"cpfCnpj":"19XXXXXXX0107","tipo":"juridica","dataNascimento":null,"email":"CLIENTE1@gmail.com","endereco":null},"pagador":{"id":null,"nome":null,"nomeSocial":null,"cpfCnpj":null,"tipo":null,"dataNascimento":null,"email":null,"endereco":null},"maquinaPagamento":{"id":"478","codigo":"478","serial":"6M230428","dataCadastro":"15/11/2020","descricao":"MQ02 - CLIENTE 1 - NEW"}},"responseStatus":[{"status":"ok","codigo":null,"mensagem":"Pagamento via cartão realizado com sucesso! [API REST]"}]}');
     }
 }
