@@ -38,7 +38,7 @@ class PagueLogoCreditCard implements PaymentMethodInterface
 
         # Informações do cartão.
         $this->card_flag = $request['billing_card_flag'];
-        $this->number = $request['billing_card_number'];
+        $this->number = str_replace(' ', '', $request['billing_card_number']);
         $this->holder_name = $request['billing_card_name'];
         $this->expiration_date = str_replace(' ', '', $request['billing_card_expiry']);
         $this->cvv = $request['billing_card_cvv'];
@@ -81,9 +81,11 @@ class PagueLogoCreditCard implements PaymentMethodInterface
             'Whois: '.$this->authorization['whois']
         ];
 
-        // $response = PagueLogoRequestMaker::endpoint('cartao/pagar', 'POST', $body, $headers);
+        update_post_meta($this->order->get_id(), 'pague_logo_request_body', json_encode($body));
 
-        $response = $this->mockResponse();
+        $response = PagueLogoRequestMaker::endpoint('cartao/pagar', 'POST', $body, $headers);
+
+        // $response = $this->mockResponse();
 
         PagueLogoRequestValidator::validate($response);
 

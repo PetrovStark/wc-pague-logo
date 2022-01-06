@@ -6,6 +6,7 @@
     const checkout_form = document.getElementsByName('checkout').item(0);
     const ignore_classes = [
         'jp-card-invalid',
+        'jp-card-valid',
         'identified'
     ];
 
