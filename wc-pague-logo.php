@@ -9,36 +9,15 @@
 
 require 'vendor/autoload.php';
 
+include 'includes/wc-pague-logo-dependencies.php';
+include 'includes/wc-pague-logo-payment-methods.php';
+// include 'includes/wp-pague-logo-admin-panel.php';
+
 use PagueLogo\Source\CardFieldsInfo;
 use PagueLogo\Source\CardValidator;
 use PagueLogo\Source\PagueLogoAuthentication;
 use PagueLogo\Source\PagueLogoPaymentGateway;
 use PagueLogo\Source\PagueLogoCreditCard;
-
-register_activation_hook( __FILE__, 'check_plugin_depedencies' );
-function check_plugin_depedencies()
-{
-    $plugin_depedencies = [
-        'WooCommerce' => 'WooCommerce',
-        'Extra_Checkout_Fields_For_Brazil' => 'Brazilian Market on WooCommerce',
-    ];
-
-    foreach ($plugin_depedencies as $classname => $plugin_name) {
-        if ( ! class_exists( $classname ) ) {
-            deactivate_plugins( plugin_basename( __FILE__ ) );
-            wp_die( 'Este plugin requer a ativação do seguinte plugin: '.$plugin_name.'<br><br><a href="#" onclick="history.back()"><-Voltar para plugins</a>' );
-        }
-    }
-}
-
-
-add_filter('woocommerce_payment_gateways', 'add_pague_logo_gateway_class');
-function add_pague_logo_gateway_class($methods) 
-{
-    $methods[] = 'WC_Pague_Logo_Gateway';
-
-    return $methods;
-}
 
 
 add_action('plugins_loaded', 'pague_logo_gateway_init');
@@ -49,7 +28,7 @@ function pague_logo_gateway_init()
      * 
      * @see https://rudrastyh.com/woocommerce/payment-gateway-plugin.html Artigo que ensina a criar gateways de pagamento.
      */
-    class WC_Pague_Logo_Gateway extends WC_Payment_Gateway
+    class WC_Pague_Logo_Credit_Card extends WC_Payment_Gateway
     {
         /**
          * Define as propriedades do gateway.
