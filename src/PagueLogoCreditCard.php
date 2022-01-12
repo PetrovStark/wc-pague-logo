@@ -85,8 +85,6 @@ class PagueLogoCreditCard implements PaymentMethodInterface
 
         $response = PagueLogoRequestMaker::endpoint('cartao/pagar', 'POST', $body, $headers);
 
-        // $response = $this->mockResponse();
-
         PagueLogoRequestValidator::validate($response);
 
         return $response;
@@ -194,7 +192,7 @@ class PagueLogoCreditCard implements PaymentMethodInterface
     /**
      * Filtra apenas os números de uma string
      */
-    private function filterNumbers(string $string)
+    private function filterNumbers($string)
     {
         return preg_replace('/[^0-9]/', '', $string);
     }
@@ -202,7 +200,7 @@ class PagueLogoCreditCard implements PaymentMethodInterface
     /**
      * Formata o valor para o formato do PagueLogo.
      */
-    private function formatPrice(int $price)
+    private function formatPrice($price)
     {
         return number_format($price, 2, ',', '.');
     }
