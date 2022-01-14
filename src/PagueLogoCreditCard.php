@@ -131,7 +131,7 @@ class PagueLogoCreditCard implements PaymentMethodInterface
     /**
      * Obtém o tipo de pessoa.
      */
-    private function getPersonType(int $person_type)
+    private function getPersonType($person_type)
     {
         switch ($person_type) {
             case 1:
