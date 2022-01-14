@@ -128,9 +128,9 @@ function wc_pague_logo_menu_page_html()
         return;
     }
 
-    # Feedback de erros para o administrador.
+    # Feedback de sucesso para o administrador.
     if ( isset( $_GET['settings-updated'] ) ) {
-        add_settings_error( 'wc_pague_logo_messages', 'wc_pague_logo_message', __( 'Settings Saved', 'wporg' ), 'updated' );
+        add_settings_error( 'wc_pague_logo_messages', 'wc_pague_logo_message', __( 'Dados atualizados com sucesso!', 'wc_pague_logo' ), 'updated' );
     }
     settings_errors( 'wc_pague_logo_messages' );
 
@@ -140,9 +140,9 @@ function wc_pague_logo_menu_page_html()
         <p>Página de configuração do plugin Pague Logo.</p>
         <form action="options.php" method="post">
             <?php
-            settings_fields( 'wc_pague_logo' );
-            do_settings_sections( 'wc_pague_logo' );
-            submit_button( 'Salvar' );
+                settings_fields( 'wc_pague_logo' );
+                do_settings_sections( 'wc_pague_logo' );
+                submit_button( 'Salvar' );
             ?>
         </form>
     </div>
