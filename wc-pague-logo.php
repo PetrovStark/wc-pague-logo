@@ -11,7 +11,7 @@ require 'vendor/autoload.php';
 
 include 'includes/wc-pague-logo-dependencies.php';
 include 'includes/wc-pague-logo-payment-methods.php';
-// include 'includes/wp-pague-logo-admin-panel.php';
+include 'includes/wc-pague-logo-admin-panel.php';
 
 use PagueLogo\Source\CardFieldsInfo;
 use PagueLogo\Source\CardValidator;
