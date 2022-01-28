@@ -1,10 +1,10 @@
 <?php
 
-use PagueLogo\Source\CardFieldsInfo;
 use PagueLogo\Source\CardValidator;
 use PagueLogo\Source\PagueLogoAuthentication;
 use PagueLogo\Source\PagueLogoPaymentGateway;
 use PagueLogo\Source\PagueLogoCreditCard;
+use PagueLogo\Source\PagueLogoEnvironmentHelper;
 
 /**
  * WC_Pague_Logo_Credit_Card
@@ -29,8 +29,6 @@ class WC_Pague_Logo_Credit_Card extends \WC_Payment_Gateway
         $admin_options = get_option('wc_pague_logo_settings');
         $this->usuario = $admin_options['wc_pague_logo_usuario'];
         $this->senha = $admin_options['wc_pague_logo_senha'];
-        $this->sandbox = $admin_options['wc_pague_logo_sandbox'] === 'on' ? true : false;
-        $this->set_environment();
 
         $this->id = 'wc-pague-logo-credit-card';
         $this->icon = '';
@@ -86,21 +84,6 @@ class WC_Pague_Logo_Credit_Card extends \WC_Payment_Gateway
                 'desc_tip' => true
             )
         );
-    }
-
-    /**
-     * set_environment
-     * 
-     * Define o endpoint de consumo da API de acordo com a configuração de sandbox.
-     */
-    public function set_environment()
-    {
-        $endpoint = 'https://paguelogo.com.br/api/';
-        if ($this->sandbox) {
-            $endpoint = 'https://sandbox.paguelogo.com.br/api/';
-        }
-
-        $GLOBALS['PAGUE_LOGO_ENDPOINT'] = $endpoint;
     }
 
     /**
