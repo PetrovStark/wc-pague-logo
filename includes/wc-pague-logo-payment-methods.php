@@ -47,6 +47,7 @@ function add_pague_logo_payment_methods($payment_methods)
 
     $pague_logo_methods = [
         'WC_Pague_Logo_Credit_Card',
+        'WC_Pague_Logo_Bank_Bill',
     ];
 
     foreach ($pague_logo_methods as $pague_logo_method) {

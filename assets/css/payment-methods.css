@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+.pague-logo-payment-method{
+    font-family: 'Montserrat', sans-serif;
+}
+
+.pague-logo-payment-method h3{
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.pague-logo-payment-method p{
+    font-size: 14px;
+    font-weight: 400;
+}

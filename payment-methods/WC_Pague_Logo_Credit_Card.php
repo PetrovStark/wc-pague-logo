@@ -31,7 +31,7 @@ class WC_Pague_Logo_Credit_Card extends \WC_Payment_Gateway
         $this->senha = $admin_options['wc_pague_logo_senha'];
 
         $this->id = 'wc-pague-logo-credit-card';
-        $this->icon = '';
+        $this->icon = 'https://www.paguelogo.com.br/assets/img/logo.png';
         $this->has_fields = true;
         $this->method_title = 'Pague Logo - Cartão de Crédito';
         $this->method_description = 'Cartão de crédito';

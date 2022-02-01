@@ -11,4 +11,5 @@ require 'vendor/autoload.php';
 include 'includes/wc-pague-logo-dependencies.php';
 include 'includes/wc-pague-logo-admin-panel.php';
 include 'includes/wc-pague-logo-environment.php';
+include 'includes/wc-pague-logo-enqueue-global-scripts.php';
 include 'includes/wc-pague-logo-payment-methods.php';
