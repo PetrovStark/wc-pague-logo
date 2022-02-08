@@ -1,4 +1,9 @@
 <?php
+use PagueLogo\Source\PagueLogoAuthentication;
+use PagueLogo\Source\PagueLogoPaymentGateway;
+use PagueLogo\Source\PagueLogoBankBill;
+use PagueLogo\Source\PagueLogoPayer;
+
 /**
  * WC_Pague_Logo_Bank_Bill
  * 
@@ -110,6 +115,8 @@ class WC_Pague_Logo_Bank_Bill extends \WC_Payment_Gateway
      * payment_fields
      * 
      * Gera a interface front-end do gateway.
+     * 
+     * @return void
      */
     public function payment_fields()
     {
@@ -122,5 +129,34 @@ class WC_Pague_Logo_Bank_Bill extends \WC_Payment_Gateway
         }
 
         include $this->plugin_dir_path . 'views/bank-bill.php';
+    }
+
+    /**
+     * process_payment
+     * 
+     * Realiza a integração com a API de pagamento na opção "Boleto Bancário".
+     * 
+     * @param int $order_id ID do pedido.
+     * 
+     * @return array | void
+     */
+    public function process_payment($order_id)
+    {
+        try {
+            $Order = wc_get_order($order_id);
+            $Authentication = new PagueLogoAuthentication($this->usuario, $this->senha);
+            $Payer = new PagueLogoPayer($_POST);
+
+            $BankBill = new PagueLogoBankBill($Order, $Payer, $Authentication);
+            $response = PagueLogoPaymentGateway::processPayment($BankBill);
+
+        } catch (Exception $e) {
+            wc_add_notice($e->getMessage(), 'error');
+
+            update_post_meta($Order->get_id(), 'pague_logo_error_log', $e->getMessage());
+            $Order->update_status('failed', $e->getMessage());
+
+            return;
+        }
     }
 }

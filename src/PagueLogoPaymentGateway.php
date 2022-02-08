@@ -9,8 +9,8 @@ use PagueLogo\Interfaces\PaymentMethodInterface;
  */
 class PagueLogoPaymentGateway
 {
-    public static function processPayment($order, $payment_method, $authorization)
+    public static function processPayment($payment_method)
     {
-        return $payment_method->processPayment($order, $authorization);
+        return $payment_method->processPayment();
     }
 }

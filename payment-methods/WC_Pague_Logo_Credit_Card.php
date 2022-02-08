@@ -4,7 +4,6 @@ use PagueLogo\Source\CardValidator;
 use PagueLogo\Source\PagueLogoAuthentication;
 use PagueLogo\Source\PagueLogoPaymentGateway;
 use PagueLogo\Source\PagueLogoCreditCard;
-use PagueLogo\Source\PagueLogoEnvironmentHelper;
 
 /**
  * WC_Pague_Logo_Credit_Card
