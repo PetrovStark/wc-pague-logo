@@ -43,6 +43,7 @@ class WC_Pague_Logo_Bank_Bill extends \WC_Payment_Gateway
         $this->desctiption = $this->get_option('description');
         $this->enabled = $this->get_option('enabled');
         $this->orientation = $this->get_option('orientation');
+        $this->due_date = $this->get_option('due_date');
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
@@ -79,7 +80,13 @@ class WC_Pague_Logo_Bank_Bill extends \WC_Payment_Gateway
                 'type'        => 'textarea',
                 'description' => 'Essa opção gerencia a orientação feita ao usuário para o pagamento do seu boleto bancário.',
                 'default'    => 'Você receberá um link para impressão do boleto após finalizar sua compra, caso queira pagar em outro momento, acesse "Minha Conta" no menu lateral, clique em "Meus Pedidos" e clique no link de impressão.',
-            )
+            ),
+            'due_date' => array(
+                'title'       => 'Data de Vencimento (em dias)',
+                'type'        => 'number',
+                'description' => 'Essa opção gerencia a data de vencimento do boleto bancário. (Não aceita números negativos, ou decimais)',
+                'default'     => '',
+            ),
         );
     }
 
@@ -146,8 +153,11 @@ class WC_Pague_Logo_Bank_Bill extends \WC_Payment_Gateway
             $Order = wc_get_order($order_id);
             $Authentication = new PagueLogoAuthentication($this->usuario, $this->senha);
             $Payer = new PagueLogoPayer($_POST);
+            $admin_options = [
+                'due_date' => $this->due_date
+            ];
 
-            $BankBill = new PagueLogoBankBill($Order, $Payer, $Authentication);
+            $BankBill = new PagueLogoBankBill($Order, $Payer, $Authentication, $admin_options);
             $response = PagueLogoPaymentGateway::processPayment($BankBill);
 
         } catch (Exception $e) {

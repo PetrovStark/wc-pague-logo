@@ -17,14 +17,16 @@ class PagueLogoBankBill implements PaymentMethodInterface
      * @param WC_Order $Order Pedido do WooCommerce
      * @param PagueLogoPayer $Payer Pagador do pedido.
      * @param PagueLogoAuthentication $Authentication Autenticação do gateway.
+     * @param array $admin_options Opções do painel administrativo.
      * 
      * @return void
      */
-    public function __construct(WC_Order $Order, PagueLogoPayer $Payer, PagueLogoAuthentication $Authentication)
+    public function __construct(WC_Order $Order, PagueLogoPayer $Payer, PagueLogoAuthentication $Authentication, $admin_options = [])
     {
         $this->Order = $Order;
         $this->Payer = $Payer;
         $this->Authentication = $Authentication;
+        $this->admin_options = $admin_options;
     }
 
     /**
@@ -40,7 +42,7 @@ class PagueLogoBankBill implements PaymentMethodInterface
             "valor" => $this->Order->get_total(),
             "nossoNumero" => "",
             "digitoNossoNumero" => "",
-            "dataVencimento" => "30/12/2022", # Adicionar opção no admin do método de pagamento "Dias para vencimento".
+            "dataVencimento" => $this->calculateDueDate(),
             "instrucaoLocalPagamento" => "",
             "instrucaoAoPagante" => "",
             "instrucoesGerais" => "Apenas um teste de desenvolvimento por enquanto.", # Adicionar opção no admin do método de pagamento "Instruções de pagamento".
@@ -80,5 +82,19 @@ class PagueLogoBankBill implements PaymentMethodInterface
                 "siglaEstado" => $this->Payer->state,
             ],
         ];
+    }
+
+    /**
+     * calculateDueDate
+     * 
+     * Calcula a data de vencimento do boleto.
+     */
+    private function calculateDueDate()
+    {
+        date_default_timezone_get('America/Sao_Paulo');
+
+        $due_date = date('d/m/Y', strtotime('+'.$this->admin_options['due_date'].' days'));
+
+        return $due_date;
     }
 }
