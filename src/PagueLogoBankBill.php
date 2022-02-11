@@ -53,9 +53,28 @@ class PagueLogoBankBill implements PaymentMethodInterface
 
         update_post_meta($this->Order->get_id(), 'pague_logo_request_body', json_encode($body));
 
-        $response = PagueLogoRequestMaker::endpoint('boleto/gerar', 'POST', $body, $this->Authentication->getHeaders());
+        // $response = PagueLogoRequestMaker::endpoint('boleto/gerar', 'POST', $body, $this->Authentication->getHeaders());
+        // PagueLogoRequestValidator::validate($response);
 
-        PagueLogoRequestValidator::validate($response);
+        $response = $this->mockResponse();
+
+        return $response;
+    }
+
+    /**
+     * insertPaymentMetaData
+     * 
+     * Insere os metadados de pagamento do pedido.
+     */
+    public function insertPaymentMetaData($response)
+    {
+        $payment_meta_data = [
+            'pague_logo_due_date' => $response->data->dataVencimento
+        ];
+
+        foreach ($payment_meta_data as $meta_key => $meta_value) {
+            update_post_meta($this->Order->get_id(), $meta_key, $meta_value);
+        } 
     }
 
     /**
@@ -96,5 +115,71 @@ class PagueLogoBankBill implements PaymentMethodInterface
         $due_date = date('d/m/Y', strtotime('+'.$this->admin_options['due_date'].' days'));
 
         return $due_date;
+    }
+
+    /**
+     * mockResponse
+     * 
+     * Retorna um objeto de sucesso 'mockado', para fins de desenvolvimento.
+     * 
+     * @return object
+     */
+    private function mockResponse()
+    {
+        return json_decode('{
+            "data": {
+                "codigoTitulo": "9398",
+                "codigoBoleto": "8325",
+                "valor": "10,05",
+                "valorLiquido": null,
+                "valorPago": null,
+                "numeroDocumento": "9398",
+                "dataDocumento": "02/12/2021",
+                "nossoNumero": null,
+                "digitoNossoNumero": null,
+                "dataVencimento": "30/12/2022",
+                "dataCadastro": "02/12/2021",
+                "dataCancelamento": null,
+                "dataPagamento": null,
+                "situacao": "pendente",
+                "linhaDigitavel": null,
+                "codigoDeBarras": null,
+                "valorMultaPorcentagem": null,
+                "diasParaCobrancaDeMulta": null,
+                "dataRegistro": null,
+                "numeroParcelaCarne": null,
+                "instrucaoLocalPagamento": "",
+                "instrucaoAoPagante": "",
+                "instrucoesGerais": "",
+                "linkVisualizacao": "https://www.paguelogo.com.br/api/boleto/XXX/YYYY/ZZZZ/U",
+                "pdfBoletoBytesBase64": null,
+                "pagador": {
+                    "id": "18852",
+                    "nome": "CALEB DE ALMEIDA FELIX",
+                    "nomeSocial": null,
+                    "cpfCnpj": "35801444130",
+                    "tipo": "fisica",
+                    "dataNascimento": null,
+                    "email": "CALEB@EMAIL.COM.BR",
+                    "endereco": {
+                        "id": "5701",
+                        "logradouro": "RUA DAS FLORES",
+                        "numero": "200",
+                        "bairro": "COLINAS",
+                        "cep": "63660000",
+                        "cidade": "TAUA",
+                        "complemento": "CASA",
+                        "siglaEstado": "CE"
+                    }
+                }
+            },
+            "responseStatus": [
+                {
+                    "status": "ok",
+                    "codigo": null,
+                    "mensagem": "Boleto gerado com sucesso!"
+                }
+            ]
+        }');
     }
 }

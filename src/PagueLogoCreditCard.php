@@ -95,7 +95,7 @@ class PagueLogoCreditCard implements PaymentMethodInterface
      * 
      * @return void
      */
-    private function insertPaymentMetaData($response)
+    public function insertPaymentMetaData($response)
     {
         $payment_meta_data = [
                 'pague_logo_created_at' => $response->data->dataPagamento,

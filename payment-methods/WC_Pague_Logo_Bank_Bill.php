@@ -166,8 +166,11 @@ class WC_Pague_Logo_Bank_Bill extends \WC_Payment_Gateway
             ];
 
             $BankBill = new PagueLogoBankBill($Order, $Payer, $Authentication, $admin_options);
-            $response = PagueLogoPaymentGateway::processPayment($BankBill);
-
+            $PagueLogoPaymentGateway = new PagueLogoPaymentGateway($BankBill);
+            
+            $response = $PagueLogoPaymentGateway->processPayment();
+            $PagueLogoPaymentGateway->insertPaymentMetaData($response);
+            
         } catch (Exception $e) {
             wc_add_notice($e->getMessage(), 'error');
 
@@ -176,5 +179,13 @@ class WC_Pague_Logo_Bank_Bill extends \WC_Payment_Gateway
 
             return;
         }
+
+          $Order->payment_complete();
+          $Order->add_order_note( 'Recebemos um pagamento!', true );
+  
+          return array(
+              'result' => 'success',
+              'redirect' => $this->get_return_url( $Order )
+          );
     }
 }
