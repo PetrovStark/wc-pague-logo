@@ -43,6 +43,7 @@ class WC_Pague_Logo_Bank_Bill extends \WC_Payment_Gateway
         $this->desctiption = $this->get_option('description');
         $this->enabled = $this->get_option('enabled');
         $this->orientation = $this->get_option('orientation');
+        $this->general_instructions = $this->get_option('general_instructions');
         $this->due_date = $this->get_option('due_date');
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
@@ -76,16 +77,22 @@ class WC_Pague_Logo_Bank_Bill extends \WC_Payment_Gateway
                 'default'     => 'Realize o pagamento com boleto bancário através da Pague Logo.',
             ),
             'orientation' => array(
-                'title'       => 'Orientação',
+                'title'       => 'Orientação no checkout',
                 'type'        => 'textarea',
-                'description' => 'Essa opção gerencia a orientação feita ao usuário para o pagamento do seu boleto bancário.',
+                'description' => 'Essa opção gerencia a orientação feita ao usuário na etapa de checkout do pedido.',
                 'default'    => 'Você receberá um link para impressão do boleto após finalizar sua compra, caso queira pagar em outro momento, acesse "Minha Conta" no menu lateral, clique em "Meus Pedidos" e clique no link de impressão.',
+            ),
+            'general_instructions' => array(
+                'title'       => 'Instruções gerais',
+                'type'        => 'textarea',
+                'description' => 'Essa opção gerencia a mensagem impressa no boleto bancário, contendo as instruções gerais de pagamento.',
+                'default'    => 'Pague este boleto online ou em uma casa lotérica.',
             ),
             'due_date' => array(
                 'title'       => 'Data de Vencimento (em dias)',
                 'type'        => 'number',
                 'description' => 'Essa opção gerencia a data de vencimento do boleto bancário. (Não aceita números negativos, ou decimais)',
-                'default'     => '',
+                'default'     => '5',
             ),
         );
     }
@@ -154,7 +161,8 @@ class WC_Pague_Logo_Bank_Bill extends \WC_Payment_Gateway
             $Authentication = new PagueLogoAuthentication($this->usuario, $this->senha);
             $Payer = new PagueLogoPayer($_POST);
             $admin_options = [
-                'due_date' => $this->due_date
+                'due_date' => $this->due_date,
+                'general_instructions' => $this->general_instructions,
             ];
 
             $BankBill = new PagueLogoBankBill($Order, $Payer, $Authentication, $admin_options);

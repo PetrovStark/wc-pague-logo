@@ -45,7 +45,7 @@ class PagueLogoBankBill implements PaymentMethodInterface
             "dataVencimento" => $this->calculateDueDate(),
             "instrucaoLocalPagamento" => "",
             "instrucaoAoPagante" => "",
-            "instrucoesGerais" => "Apenas um teste de desenvolvimento por enquanto.", # Adicionar opção no admin do método de pagamento "Instruções de pagamento".
+            "instrucoesGerais" => $this->admin_options['general_instructions'],
             "enviarBoletoPorEmailParaPagador" => "true",
             "gerarPdf" => "true",
             "pagador" => $this->getPayer()
