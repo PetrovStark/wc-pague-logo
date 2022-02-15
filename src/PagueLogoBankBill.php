@@ -69,12 +69,24 @@ class PagueLogoBankBill implements PaymentMethodInterface
     public function insertPaymentMetaData($response)
     {
         $payment_meta_data = [
-            'pague_logo_due_date' => $response->data->dataVencimento
+            'codigoBoleto',
+            'valor',
+            'numeroDocumento',
+            'dataVencimento',
+            'dataCadastro',
+            'dataCancelamento',
+            'dataPagamento',
+            'situacao',
+            'linkVisualizacao',
         ];
 
-        foreach ($payment_meta_data as $meta_key => $meta_value) {
-            update_post_meta($this->Order->get_id(), $meta_key, $meta_value);
-        } 
+        foreach ($response->data as $meta_key => $meta_value) {
+            if (!in_array($meta_key, $payment_meta_data)) {
+                continue;
+            }
+
+            update_post_meta($this->Order->get_id(), 'pague_logo_'.$meta_key, $meta_value);
+        }
     }
 
     /**
