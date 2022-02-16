@@ -26,6 +26,7 @@ class PagueLogoBankBill implements PaymentMethodInterface
         $this->Order = $Order;
         $this->Payer = $Payer;
         $this->Authentication = $Authentication;
+        $this->Formatter = new PagueLogoFormatter();
         $this->admin_options = $admin_options;
     }
 
@@ -39,7 +40,7 @@ class PagueLogoBankBill implements PaymentMethodInterface
         date_default_timezone_set('America/Sao_Paulo');
 
         $body = json_encode([
-            "valor" => $this->Order->get_total(),
+            "valor" => $this->Formatter->formatPrice($this->Order->get_total()),
             "nossoNumero" => "",
             "digitoNossoNumero" => "",
             "dataVencimento" => $this->calculateDueDate(),
@@ -53,10 +54,8 @@ class PagueLogoBankBill implements PaymentMethodInterface
 
         update_post_meta($this->Order->get_id(), 'pague_logo_request_body', json_encode($body));
 
-        // $response = PagueLogoRequestMaker::endpoint('boleto/gerar', 'POST', $body, $this->Authentication->getHeaders());
-        // PagueLogoRequestValidator::validate($response);
-
-        $response = $this->mockResponse();
+        $response = PagueLogoRequestMaker::endpoint('boleto/gerar', 'POST', $body, $this->Authentication->getHeaders());
+        PagueLogoRequestValidator::validate($response);
 
         return $response;
     }
@@ -107,7 +106,7 @@ class PagueLogoBankBill implements PaymentMethodInterface
                 "logradouro" => $this->Payer->address_1,
                 "numero" => $this->Payer->address_number,
                 "bairro" => $this->Payer->neighborhood,
-                "cep" => $this->Payer->postcode,
+                "cep" => $this->Formatter->filterNumbers($this->Payer->postcode),
                 "cidade" => $this->Payer->city,
                 "complemento" => $this->Payer->address_2,
                 "siglaEstado" => $this->Payer->state,
