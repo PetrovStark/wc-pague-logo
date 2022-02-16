@@ -18,6 +18,11 @@ function pague_logo_enqueue_global_scripts()
             'script_id' => 'pague-logo-payment-methods-css',
             'script_url' => $plugin_dir_url . 'assets/css/payment-methods.css',
         ],
+        [
+            'script_type' => 'style',
+            'script_id' => 'pague-logo-download-bank-bill',
+            'script_url' => $plugin_dir_url . 'assets/css/download-bank-bill.css'
+        ]
     ];
 
     foreach ($global_scripts as $global_script) {

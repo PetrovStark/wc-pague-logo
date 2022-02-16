@@ -1,0 +1,30 @@
+/* Adaptações do layout para a tela de agradecimento. */
+.download-bank-bill.thankyou{
+    margin-bottom: 80px;
+}
+
+/* Botão de baixar o boleto */
+.download-bank-bill a{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: -moz-fit-content;
+    width: fit-content;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 2px solid #91288a;
+    background: #91288a;
+    color: white;
+    font-weight: bold;
+    text-decoration: none !important;
+    transition: .1s ease-in-out;
+}
+.download-bank-bill a:hover{
+    color: #91288a;
+    background: white;
+}
+.download-bank-bill svg{
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
