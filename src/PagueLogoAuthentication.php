@@ -31,6 +31,22 @@ class PagueLogoAuthentication
     {
         return $this->response->whois;
     }
+
+    /**
+     * getHeaders
+     * 
+     * Obtém os headers de autenticação.
+     * 
+     * @return array
+     */
+    public function getHeaders()
+    {
+        return [
+            'Content-Type: application/json',
+            'Authorization: Bearer '.$this->response->token,
+            'Whois: '.$this->response->whois
+        ]; 
+    }
     
     /**
      * Processa a autenticação, retornando um token de autenticação.
