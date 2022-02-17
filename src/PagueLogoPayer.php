@@ -4,6 +4,11 @@ namespace PagueLogo\Source;
 
 use PagueLogo\Source\PagueLogoFormatter;
 
+/**
+ * PagueLogoPayer
+ * 
+ * Entidade que representa o pagador do pedido.
+ */
 class PagueLogoPayer
 {
     /**
@@ -30,6 +35,14 @@ class PagueLogoPayer
         $this->neighborhood = $request['billing_neighborhood'];
         $this->city = $request['billing_city'];
         $this->state = strtolower($request['billing_state']);
+
+        # Informações do cartão.
+        $this->card_installments = $request['billing_installments'];
+        $this->card_holder_name = $request['billing_card_name'];
+        $this->card_number = $Formatter->filterSpaces($request['billing_card_number']);
+        $this->card_expiration = $Formatter->filterSpaces($request['billing_card_expiry']);
+        $this->card_cvv = $request['billing_card_cvv'];
+        $this->card_flag = $request['billing_card_flag'];
     }
 
     /**
@@ -42,6 +55,35 @@ class PagueLogoPayer
     public function __get($atrib)
     {
         return $this->$atrib;
+    }
+
+    /**
+     * get
+     * 
+     * Obtém os dados do pagador.
+     */
+    public function get()
+    {
+        return [
+            "id" => "",
+            "nome" => $this->full_name,
+            "nomeSocial" => $this->full_name,
+            "tipo" => $this->person_type,
+            "dataNascimento" => "",
+            "cpfCnpj" => $this->document,
+            "email" => $this->email,
+            "telefone" => $this->phone,
+            "endereco" => [
+                "id" => "",
+                "logradouro" => $this->address_1,
+                "numero" => $this->address_number,
+                "bairro" => $this->neighborhood,
+                "cep" => $this->postcode,
+                "cidade" => $this->city,
+                "complemento" => $this->address_2,
+                "siglaEstado" => $this->state,
+            ],
+        ];
     }
 
     /**

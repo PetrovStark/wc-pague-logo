@@ -24,4 +24,14 @@ class PagueLogoFormatter
     {
         return number_format($price, 2, ',', '.');
     }
+
+    /**
+     * filterSpaces
+     * 
+     * Remove espaços em branco de uma string.
+     */
+    public function filterSpaces($string)
+    {
+        return preg_replace('/\s+/', '', $string);
+    }
 }

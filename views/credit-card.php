@@ -15,7 +15,7 @@
             <span class="error-msg">Campo obrigatório</span>
             <select name="billing_installments">
                 <option value="">Selecione o número de parcelas...</option>
-                <?php for ($i = 1; $i <= $parcelas; $i++) : ?>
+                <?php for ($i = 1; $i <= $installments; $i++) : ?>
                     <option value="<?=$i?>"><?=$i?>x de R$ <?=number_format($price / $i, 2, ',', '.')?></option>
                 <?php endfor; ?>
             </select>

@@ -4,6 +4,7 @@ use PagueLogo\Source\CardValidator;
 use PagueLogo\Source\PagueLogoAuthentication;
 use PagueLogo\Source\PagueLogoPaymentGateway;
 use PagueLogo\Source\PagueLogoCreditCard;
+use PagueLogo\Source\PagueLogoPayer;
 
 /**
  * WC_Pague_Logo_Credit_Card
@@ -43,7 +44,7 @@ class WC_Pague_Logo_Credit_Card extends \WC_Payment_Gateway
         $this->title = $this->get_option('title');
         $this->desctiption = $this->get_option('description');
         $this->enabled = $this->get_option('enabled');
-        $this->parcelas = $this->get_option('parcelas');
+        $this->installments = $this->get_option('parcelas');
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('wp_enqueue_scripts', [$this, 'payment_scripts']);
@@ -115,7 +116,7 @@ class WC_Pague_Logo_Credit_Card extends \WC_Payment_Gateway
     public function payment_fields()
     {
         $admin_options = [
-            'parcelas'
+            'installments'
         ];
 
         foreach ($admin_options as $option) {
@@ -157,38 +158,35 @@ class WC_Pague_Logo_Credit_Card extends \WC_Payment_Gateway
      */
     public function process_payment($order_id)
     {
-        $order = wc_get_order($order_id);
-
         try {
-            $PagueLogoAuth = new PagueLogoAuthentication($this->usuario, $this->senha);
-            $authorization = [
-                'token' => $PagueLogoAuth->getToken(),
-                'whois' => $PagueLogoAuth->getWhois()
+            $Order = wc_get_order($order_id);
+            $Authentication = new PagueLogoAuthentication($this->usuario, $this->senha);
+            $Payer = new PagueLogoPayer($_POST);
+            $admin_options = [
+                'installments' => $this->installments
             ];
 
-            $CreditCard = new PagueLogoCreditCard($_POST, $order, $authorization);
+            $CreditCard = new PagueLogoCreditCard($Order, $Payer, $Authentication, $admin_options);
+            $PagueLogoPaymentGateway = new PagueLogoPaymentGateway($CreditCard);
 
-            $response = PagueLogoPaymentGateway::processPayment($order, $CreditCard, $authorization);
-
-            update_post_meta($order->get_id(), 'pague_logo_response_log', json_encode($response));
+            $response = $PagueLogoPaymentGateway->processPayment();
+            $PagueLogoPaymentGateway->insertPaymentMetaData($response);
 
         } catch (Exception $e) {
             wc_add_notice($e->getMessage(), 'error');
 
-            update_post_meta($order->get_id(), 'pague_logo_error_log', $e->getMessage());
-            $order->update_status('failed', $e->getMessage());
+            update_post_meta($Order->get_id(), 'pague_logo_error_log', $e->getMessage());
+            $Order->update_status('failed', $e->getMessage());
 
             return;
         }
 
-        // we received the payment
-        $order->payment_complete();
-
-        $order->add_order_note( 'Hey, your order is paid! Thank you!', true );
+        $Order->payment_complete();
+        $Order->add_order_note( 'Recebemos um pagamento!', true );
 
         return array(
             'result' => 'success',
-            'redirect' => $this->get_return_url( $order )
+            'redirect' => $this->get_return_url( $Order )
         );
 
     }
