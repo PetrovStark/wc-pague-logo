@@ -50,9 +50,9 @@ function add_bank_bill_download_order_action( $actions, $order )
             'url'  => $boleto_download_url,
             'name' => 'Baixar boleto (PDF)',
         );
-
-        return $actions;
     }
+
+    return $actions;
 }
 add_filter( 'woocommerce_my_account_my_orders_actions', 'add_bank_bill_download_order_action', 10, 2 );
 
